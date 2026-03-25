@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paiement confirmé — ReloCare</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { background: #f7f6f4; font-family: 'Instrument Sans', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+  .card { background: white; border-top: 3px solid #27ae60; border-radius: 10px; padding: 48px 40px; text-align: center; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,.1); animation: up .3s ease; }
+  @keyframes up { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+  .icon { font-size: 48px; margin-bottom: 16px; }
+  .title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: #111; margin-bottom: 8px; }
+  .amount { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: #27ae60; margin: 16px 0; }
+  .sub { font-size: 13px; color: #888; margin-bottom: 24px; }
+  .btn { background: #c0392b; color: white; border: none; padding: 11px 24px; border-radius: 6px; font-family: 'Instrument Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .btn:hover { background: #e74c3c; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">✅</div>
+  <div class="title">Paiement confirmé !</div>
+  <div class="amount" id="amount-display">—</div>
+  <div class="sub" id="sub-text">Votre crédit a été mis à jour.</div>
+  <button class="btn" onclick="goHome()">Retourner à mon espace</button>
+</div>
+
+<script>
+  // Lecture des paramètres Stripe passés dans l'URL
+  const params = new URLSearchParams(window.location.search);
+  const amount  = parseFloat(params.get('amount') || '0');
+  const currency = (params.get('currency') || 'CHF').toUpperCase();
+  const clientCode = (params.get('client') || '').toUpperCase();
+
+  document.getElementById('amount-display').textContent = '+' + amount.toFixed(0) + ' ' + currency + ' crédités';
+  document.getElementById('sub-text').textContent = 'Compte ' + clientCode + ' · Disponible immédiatement';
+
+  // Mise à jour du localStorage pour refléter le nouveau crédit côté client
+  if (amount > 0 && clientCode) {
+    try {
+      const db = JSON.parse(localStorage.getItem('rc4') || 'null');
+      if (db && db.clients) {
+        const client = db.clients.find(c => (c.cod || '').toUpperCase() === clientCode);
+        if (client) {
+          client.cr = (client.cr || 0) + amount;
+          // Ajout dans l'historique
+          db.crHist = db.crHist || [];
+          db.crHist.unshift({
+            id: 'x' + Math.random().toString(36).substr(2, 9),
+            cid: client.id,
+            t: 'cr',
+            a: amount,
+            d: currency,
+            no: 'Recharge Stripe',
+            r: params.get('session_id') || '',
+            dt: new Date().toISOString()
+          });
+          localStorage.setItem('rc4', JSON.stringify(db));
+        }
+      }
+    } catch(e) {
+      console.warn('localStorage update failed:', e);
+    }
+  }
+
+  function goHome() {
+    window.location.href = '/';
+  }
+
+  // Redirection automatique après 4 secondes
+  setTimeout(goHome, 4000);
+</script>
+</body>
+</html>

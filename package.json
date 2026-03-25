@@ -1,0 +1,11 @@
+{
+  "name": "relocare",
+  "version": "1.0.0",
+  "description": "ReloCare - Gestion clients relocation Genève",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "stripe": "^14.0.0"
+  }
+}
