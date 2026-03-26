@@ -726,4 +726,10 @@ function CP(name){document.querySelectorAll('.cp').forEach(function(p){p.classLi
 // STRIPE
 var pkgA=0;
 function selP(el,val){document.querySelectorAll('.pk').forEach(function(p){p.classList.remove('sel');});el.classList.add('sel');document.getElementById('cr-row').style.display=val==='x'?'':'none';pkgA=val==='x'?0:val;}
-function doStripe(){var amt=pkgA||Number(document.getElementById('cr-amt')?document.getElementById('cr-amt').value:0);if(!amt||amt<50){notify('Minimum 50 CHF/EUR');return;}var c=cBy(curU?curU.cid:'');if(!c)return;var bonus=amt>=200?amt*.10:amt>=100?amt*.05:0;var total=amt+bonus;if(confirm('Paiement Stripe : '+amt+' '+c.dev+(bonus>0?' + '+bonus.toFixed(0)+' bonus offert':'')+'\nTotal crédité : '+total.toFixed(0)+' '+c.dev+'\n\n(Simulation — en production : re
+function doStripe(){var amt=pkgA||Number(document.getElementById('cr-amt')?document.getElementById('cr-amt').value:0);if(!amt||amt<50){notify('Minimum 50 CHF/EUR');return;}var c=cBy(curU?curU.cid:'');if(!c)return;var bonus=amt>=200?amt*.10:amt>=100?amt*.05:0;var total=amt+bonus;if(confirm('Paiement Stripe : '+amt+' '+c.dev+(bonus>0?' + '+bonus.toFixed(0)+' bonus offert':'')+'\nTotal crédité : '+total.toFixed(0)+' '+c.dev+'\n\n(Simulation — en production : redirection Stripe)'))
+{c.cr=(c.cr||0)+total;db.crHist.unshift({id:uid(),cid:c.id,t:'cr',a:total,d:c.dev,no:'Recharge portail'+(bonus>0?' (+bonus)':''),r:'STRIPE-'+uid().substr(0,8).toUpperCase(),dt:new Date().toISOString()});sv();renderCV(c.id);CP('dash');notify('✓ '+total.toFixed(0)+' '+c.dev+' crédités !');}}
+
+sv();
+</script>
+</body>
+</html>
